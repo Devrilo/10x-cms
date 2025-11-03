@@ -1,6 +1,7 @@
 var expect = require("chai").expect;
 var path = require("path");
-var templating = require("./templating");
+// Import from compiled TypeScript output
+var templating = require("../../dist/src/server/templating");
 
 describe("Templating Engine", function () {
   describe("parseMetaTags", function () {
