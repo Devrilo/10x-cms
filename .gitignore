@@ -37,3 +37,4 @@ tmp/
 temp/
 e2e/test-results/
 playwright-report/
+temp_server_pid.txt
