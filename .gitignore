@@ -38,3 +38,4 @@ temp/
 e2e/test-results/
 playwright-report/
 temp_server_pid.txt
+e2e/.auth/user.json
