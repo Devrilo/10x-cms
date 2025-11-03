@@ -35,5 +35,15 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+*.pid
+temp_server_pid.txt
+
+# Test artifacts
 e2e/test-results/
+e2e/.auth/
+test-results/
 playwright-report/
+
+# Development database
+src/server/db/dev.sqlite3
+src/server/db/*.sqlite3
