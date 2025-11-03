@@ -1,0 +1,72 @@
+{
+  "sources": [
+    "src/**/*.js",
+    "index.js"
+  ],
+  "anyAlias": "$TSFixMe",
+  "aliases": {
+    "any": "$TSFixMe",
+    "***": "$TSFixMe"
+  },
+  "plugins": [
+    {
+      "name": "ts-ignore",
+      "config": {}
+    },
+    {
+      "name": "strip-ts-ignore",
+      "config": {}
+    },
+    {
+      "name": "hoisted-class-methods",
+      "config": {}
+    },
+    {
+      "name": "react-props",
+      "config": {}
+    },
+    {
+      "name": "react-class-state",
+      "config": {}
+    },
+    {
+      "name": "react-class-lifecycle-methods",
+      "config": {}
+    },
+    {
+      "name": "react-default-props",
+      "config": {}
+    },
+    {
+      "name": "react-shape",
+      "config": {}
+    },
+    {
+      "name": "member-accessibility",
+      "config": {}
+    },
+    {
+      "name": "declare-missing-class-properties",
+      "config": {}
+    },
+    {
+      "name": "eslint-fix",
+      "config": {}
+    },
+    {
+      "name": "ts-ignore",
+      "config": {}
+    },
+    {
+      "name": "add-conversions",
+      "config": {}
+    },
+    {
+      "name": "explicit-any",
+      "config": {}
+    }
+  ],
+  "typeValidation": {
+    "exclude": ["node_modules", "bower_components", "public/vendor"]
+  }
+}

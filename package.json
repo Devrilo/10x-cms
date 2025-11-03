@@ -30,7 +30,8 @@
     "bower": "1.8.14",
     "chai": "4.3.4",
     "mocha": "8.4.0",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "ts-migrate": "^0.1.35"
   },
   "engines": {
     "node": ">=16.0.0"
