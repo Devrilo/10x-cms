@@ -2,10 +2,13 @@
   "name": "10x-cms",
   "version": "1.0.0",
   "description": "A modern Content Management System built with performance and scalability in mind",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node dist/index.js",
+    "dev": "ts-node index.ts",
+    "build": "tsc && npm run copy-db",
+    "copy-db": "powershell -Command \"Copy-Item 'src/server/db/dev.sqlite3' 'dist/src/server/db/' -Force -ErrorAction SilentlyContinue; Copy-Item 'src/server/db/migrations' 'dist/src/server/db/' -Recurse -Force -ErrorAction SilentlyContinue; Copy-Item 'src/server/data' 'dist/src/server/' -Recurse -Force -ErrorAction SilentlyContinue\"",
+    "watch": "tsc --watch",
     "test": "mocha \"src/**/*.test.js\"",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -35,7 +38,9 @@
     "chai": "4.3.4",
     "mocha": "8.4.0",
     "nodemon": "^3.0.2",
-    "ts-migrate": "^0.1.35"
+    "ts-migrate": "^0.1.35",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=16.0.0"

@@ -1,10 +1,10 @@
 import * as storage from './storage';
+// @ts-ignore - TODO: Add type definitions for @10xdevspl/http-client
 import * as httpClient from '@10xdevspl/http-client';
-import type {
+import {
   Webhook,
   WebhookEvent,
   WebhookPayload,
-  CollectionWithItems,
   Item,
 } from '../types';
 

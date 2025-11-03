@@ -98,23 +98,55 @@ Zależności frontendowe zostaną zainstalowane w katalogu `public/vendor`.
 
 ## Stack techniczny
 
+- **TypeScript** - statyczne typowanie dla JavaScript
 - Node.js - środowisko wykonawcze
 - Bower - zarządzanie zależnościami frontendowymi
 - jQuery & jQuery UI - obsługa interakcji po stronie klienta
 - Bootstrap - style komponentów
 - Express - framework backendowy
+- Knex - query builder dla SQLite
 - Multer - obsługa przesyłanych plików
+- Playwright - testy E2E
 - Mocha & Chai - narzędzia do testowania
 
 ## Uruchamianie aplikacji
 
-Aby uruchomić aplikację w trybie deweloperskim:
+### Tryb deweloperski (TypeScript)
 
 ```bash
 npm run dev
 ```
 
+### Tryb produkcyjny (skompilowany JavaScript)
+
+```bash
+# Kompilacja TypeScript
+npm run build
+
+# Uruchomienie aplikacji
+npm start
+```
+
 Aplikacja będzie dostępna pod adresem `http://localhost:3000`.
+
+## TypeScript Migration
+
+Projekt został zmigrowany do TypeScript. Więcej informacji:
+- [Plan migracji](./docs/typescript-migration-plan.md)
+- [Podsumowanie migracji](./docs/typescript-migration-summary.md)
+
+### Rozwój z TypeScript
+
+```bash
+# Sprawdzenie błędów kompilacji
+npx tsc --noEmit
+
+# Kompilacja z obserwowaniem zmian
+npm run watch
+
+# Budowanie projektu
+npm run build
+```
 
 ## Licencja
 

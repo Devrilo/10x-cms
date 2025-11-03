@@ -10,4 +10,5 @@ export * from './media';
 // Templating
 export * from './templating';
 
-// Express augmentation is auto-included via reference
+// Express augmentation - must be imported
+import './express';

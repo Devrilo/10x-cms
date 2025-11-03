@@ -3,7 +3,7 @@
     "target": "ES2020",
     "module": "commonjs",
     "lib": ["ES2020"],
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "jsx": "preserve",
     "declaration": true,
@@ -17,8 +17,8 @@
     "downlevelIteration": true,
     "isolatedModules": true,
     "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
@@ -27,11 +27,11 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noImplicitAny": false
+    "noImplicitAny": true
   },
   "include": [
     "src/**/*",
-    "index.js",
+    "index.ts",
     "playwright.config.ts"
   ],
   "exclude": [
