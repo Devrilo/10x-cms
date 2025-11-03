@@ -26,7 +26,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "22.14.1",
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.14.1",
     "bower": "1.8.14",
     "chai": "4.3.4",
     "mocha": "8.4.0",
