@@ -4,6 +4,7 @@ var templating = require("./src/server/templating");
 var storageModule = require("./src/server/storage");
 var mediaModule = require("./src/server/media");
 var apiRoutes = require("./src/server/api");
+var apiV2Routes = require("./src/server/api-v2"); // NEW: DDD API
 var webhooksModule = require("./src/server/webhooks");
 var bodyParser = require("body-parser");
 var dotenv = require("dotenv");
@@ -48,6 +49,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 app.use("/api", apiRoutes);
+app.use("/api/v2", apiV2Routes); // NEW: DDD API v2
 
 app.use(function (req, res, next) {
   var cookies = {};
@@ -214,6 +216,16 @@ app.delete("/api/webhooks/:id", requireAuth, async function (req, res) {
     console.error("Error deleting webhook:", error);
     res.status(500).json({error: "Error deleting webhook"});
   }
+});
+
+// NEW: DDD Content Types page
+app.get("/content-types", requireAuth, function (req, res) {
+  renderPage(req, res);
+});
+
+// NEW: DDD Content Manager page
+app.get("/content-items", requireAuth, function (req, res) {
+  renderPage(req, res);
 });
 
 app.get("/collections", requireAuth, async function (req, res) {
@@ -717,21 +729,45 @@ app.delete("/api/media/:id", requireAuth, function (req, res) {
   }
 });
 
-// Initialize storage
+// Initialize storage and DDD modules
 (async () => {
   try {
     await storageModule.initializeStorage();
     console.log("Database initialized successfully");
+
+    // Initialize DDD modules
+    const { getModules } = require('./src/modules/bootstrap');
+    const dddModules = getModules();
+    console.log("DDD modules initialized successfully");
+    console.log("  - Modeling Context: ContentType management");
+    console.log("  - Content Catalog Context: Content management with versioning");
+    console.log("  - Event Bus: Domain events for integration");
 
     // Initialize media storage
     mediaModule.initializeMediaStorage();
 
     // Start server
     var server = app.listen(3000, function () {
-      console.log("Server is running on http://localhost:3000");
+      console.log("");
+      console.log("=".repeat(60));
+      console.log("10x-CMS Server is running!");
+      console.log("=".repeat(60));
+      console.log("");
+      console.log("Admin UI:           http://localhost:3000");
+      console.log("Login page:         http://localhost:3000/login");
+      console.log("");
+      console.log("API v1 (legacy):    http://localhost:3000/api");
+      console.log("API v2 (DDD):       http://localhost:3000/api/v2");
+      console.log("");
+      console.log("Documentation:      docs/DDD_IMPLEMENTATION.md");
+      console.log("Example usage:      examples/ddd-usage-example.js");
+      console.log("");
+      console.log("Run example:        node examples/ddd-usage-example.js");
+      console.log("=".repeat(60));
+      console.log("");
     });
   } catch (error) {
-    console.error("Error initializing database:", error);
+    console.error("Error initializing application:", error);
     process.exit(1);
   }
 })();

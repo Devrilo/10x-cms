@@ -1,0 +1,469 @@
+<!-- @layout:base -->
+<!-- @title:Content Types - 10xCMS -->
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1>Content Types</h1>
+          <p class="text-muted">Define schemas for your content</p>
+        </div>
+        <button id="createTypeBtn" class="btn btn-primary">
+          <i class="bi bi-plus-circle me-1"></i> Create Content Type
+        </button>
+      </div>
+
+      <!-- Content Types List -->
+      <div class="row" id="contentTypesContainer">
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading content types...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Content Type Modal -->
+<div class="modal fade" id="contentTypeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="contentTypeModalTitle">Create Content Type</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="contentTypeForm">
+          <input type="hidden" id="typeId" />
+          
+          <div class="mb-3">
+            <label for="typeName" class="form-label">Name (Technical) *</label>
+            <input type="text" class="form-control" id="typeName" required 
+              placeholder="e.g. blogPost, landingPage" />
+            <small class="text-muted">Lowercase, no spaces (camelCase recommended)</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="typeDisplayName" class="form-label">Display Name *</label>
+            <input type="text" class="form-control" id="typeDisplayName" required 
+              placeholder="e.g. Blog Post, Landing Page" />
+          </div>
+
+          <div class="mb-3">
+            <label for="typeDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="typeDescription" rows="2"
+              placeholder="Optional description of this content type"></textarea>
+          </div>
+
+          <hr class="my-4" />
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Fields</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="addFieldBtn">
+              <i class="bi bi-plus"></i> Add Field
+            </button>
+          </div>
+
+          <div id="fieldsContainer">
+            <!-- Fields will be added here dynamically -->
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveTypeBtn">
+          <i class="bi bi-save me-1"></i> Save Content Type
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Field Template (hidden) -->
+<template id="fieldTemplate">
+  <div class="card mb-3 field-item">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <h6 class="mb-0">Field <span class="field-number"></span></h6>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-field-btn">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label">Field Name *</label>
+          <input type="text" class="form-control field-name" required 
+            placeholder="e.g. title, content" />
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label">Type *</label>
+          <select class="form-select field-type" required>
+            <option value="string">String</option>
+            <option value="number">Number</option>
+            <option value="boolean">Boolean</option>
+            <option value="date">Date</option>
+            <option value="richText">Rich Text</option>
+            <option value="relation">Relation</option>
+            <option value="media">Media</option>
+            <option value="array">Array</option>
+            <option value="object">Object</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label">Display Name</label>
+          <input type="text" class="form-control field-display-name" 
+            placeholder="e.g. Title, Content" />
+        </div>
+        <div class="col-md-6 mb-2">
+          <div class="form-check mt-4">
+            <input class="form-check-input field-required" type="checkbox" />
+            <label class="form-check-label">Required</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Description</label>
+        <input type="text" class="form-control field-description" 
+          placeholder="Optional field description" />
+      </div>
+
+      <!-- Validations section (collapsed by default) -->
+      <div class="mt-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary toggle-validations">
+          <i class="bi bi-gear"></i> Validations (optional)
+        </button>
+        <div class="validations-section mt-2" style="display: none;">
+          <textarea class="form-control field-validations" rows="3" 
+            placeholder='[{"type": "minLength", "value": 1}, {"type": "maxLength", "value": 200}]'></textarea>
+          <small class="text-muted">JSON array of validation rules</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+const API_BASE = '/api/v2';
+let contentTypes = [];
+let currentTypeId = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  loadContentTypes();
+  
+  document.getElementById('createTypeBtn').addEventListener('click', openCreateModal);
+  document.getElementById('saveTypeBtn').addEventListener('click', saveContentType);
+  document.getElementById('addFieldBtn').addEventListener('click', addFieldToForm);
+});
+
+// Load content types
+async function loadContentTypes() {
+  try {
+    const response = await fetch(`${API_BASE}/content-types`);
+    const data = await response.json();
+    
+    console.log('API Response:', data); // Debug
+    contentTypes = data.contentTypes || data.data || [];
+    renderContentTypes();
+  } catch (error) {
+    console.error('Error loading content types:', error);
+    showError('Failed to load content types');
+  }
+}
+
+// Render content types
+function renderContentTypes() {
+  const container = document.getElementById('contentTypesContainer');
+  
+  if (contentTypes.length === 0) {
+    container.innerHTML = `
+      <div class="col-12 text-center py-5">
+        <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+        <p class="mt-3 text-muted">No content types yet. Create your first one!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = contentTypes.map(type => `
+    <div class="col-md-6 col-lg-4 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title">${escapeHtml(type.displayName)}</h5>
+            <span class="badge bg-primary">${type.fields.length} fields</span>
+          </div>
+          <p class="text-muted small mb-2">
+            <code>${escapeHtml(type.name)}</code>
+          </p>
+          ${type.description ? `<p class="card-text small">${escapeHtml(type.description)}</p>` : ''}
+          
+          <hr />
+          
+          <div class="mb-2">
+            <small class="text-muted d-block">Fields:</small>
+            <div class="mt-1">
+              ${type.fields.slice(0, 3).map(field => 
+                `<span class="badge bg-light text-dark me-1">${escapeHtml(field.name)}: ${escapeHtml(field.type)}</span>`
+              ).join('')}
+              ${type.fields.length > 3 ? `<span class="badge bg-light text-dark">+${type.fields.length - 3} more</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <button class="btn btn-sm btn-outline-primary" onclick="editContentType('${type.id}')">
+            <i class="bi bi-pencil"></i> Edit
+          </button>
+          <button class="btn btn-sm btn-outline-info" onclick="viewContentType('${type.id}')">
+            <i class="bi bi-eye"></i> View
+          </button>
+          <button class="btn btn-sm btn-outline-danger float-end" onclick="deleteContentType('${type.id}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Open create modal
+function openCreateModal() {
+  currentTypeId = null;
+  document.getElementById('contentTypeModalTitle').textContent = 'Create Content Type';
+  document.getElementById('contentTypeForm').reset();
+  document.getElementById('typeId').value = '';
+  document.getElementById('fieldsContainer').innerHTML = '';
+  
+  // Add one default field
+  addFieldToForm();
+  
+  new bootstrap.Modal(document.getElementById('contentTypeModal')).show();
+}
+
+// Edit content type
+async function editContentType(typeId) {
+  try {
+    const response = await fetch(`${API_BASE}/content-types/${typeId}`);
+    const data = await response.json();
+    const type = data.contentType;
+    
+    currentTypeId = typeId;
+    document.getElementById('contentTypeModalTitle').textContent = 'Edit Content Type';
+    document.getElementById('typeId').value = type.id;
+    document.getElementById('typeName').value = type.name;
+    document.getElementById('typeDisplayName').value = type.displayName;
+    document.getElementById('typeDescription').value = type.description || '';
+    
+    // Load fields
+    document.getElementById('fieldsContainer').innerHTML = '';
+    type.fields.forEach(field => {
+      addFieldToForm(field);
+    });
+    
+    new bootstrap.Modal(document.getElementById('contentTypeModal')).show();
+  } catch (error) {
+    console.error('Error loading content type:', error);
+    showError('Failed to load content type');
+  }
+}
+
+// View content type details
+async function viewContentType(typeId) {
+  const type = contentTypes.find(t => t.id === typeId);
+  if (!type) return;
+  
+  alert(`Content Type: ${type.displayName}\n\nName: ${type.name}\nFields: ${type.fields.length}\n\nFields:\n${type.fields.map(f => `- ${f.name} (${f.type})${f.required ? ' *' : ''}`).join('\n')}`);
+}
+
+// Delete content type
+async function deleteContentType(typeId) {
+  if (!confirm('Are you sure you want to delete this content type?')) return;
+  
+  try {
+    const response = await fetch(`${API_BASE}/content-types/${typeId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) throw new Error('Failed to delete');
+    
+    showSuccess('Content type deleted successfully');
+    loadContentTypes();
+  } catch (error) {
+    console.error('Error deleting content type:', error);
+    showError('Failed to delete content type');
+  }
+}
+
+// Add field to form
+function addFieldToForm(fieldData = null) {
+  const template = document.getElementById('fieldTemplate');
+  const clone = template.content.cloneNode(true);
+  const container = document.getElementById('fieldsContainer');
+  
+  const fieldItem = clone.querySelector('.field-item');
+  const fieldNumber = container.children.length + 1;
+  
+  fieldItem.querySelector('.field-number').textContent = fieldNumber;
+  
+  // Set field data if editing
+  if (fieldData) {
+    fieldItem.querySelector('.field-name').value = fieldData.name || '';
+    fieldItem.querySelector('.field-type').value = fieldData.type || 'string';
+    fieldItem.querySelector('.field-display-name').value = fieldData.displayName || '';
+    fieldItem.querySelector('.field-required').checked = fieldData.required || false;
+    fieldItem.querySelector('.field-description').value = fieldData.description || '';
+    if (fieldData.validations && fieldData.validations.length > 0) {
+      fieldItem.querySelector('.field-validations').value = JSON.stringify(fieldData.validations);
+    }
+  }
+  
+  // Remove field button
+  fieldItem.querySelector('.remove-field-btn').addEventListener('click', (e) => {
+    e.target.closest('.field-item').remove();
+    updateFieldNumbers();
+  });
+  
+  // Toggle validations
+  fieldItem.querySelector('.toggle-validations').addEventListener('click', (e) => {
+    const section = e.target.closest('.field-item').querySelector('.validations-section');
+    section.style.display = section.style.display === 'none' ? 'block' : 'none';
+  });
+  
+  container.appendChild(fieldItem);
+}
+
+// Update field numbers
+function updateFieldNumbers() {
+  const fields = document.querySelectorAll('.field-item');
+  fields.forEach((field, index) => {
+    field.querySelector('.field-number').textContent = index + 1;
+  });
+}
+
+// Save content type
+async function saveContentType() {
+  const typeId = document.getElementById('typeId').value;
+  const name = document.getElementById('typeName').value.trim();
+  const displayName = document.getElementById('typeDisplayName').value.trim();
+  const description = document.getElementById('typeDescription').value.trim();
+  
+  if (!name || !displayName) {
+    showError('Name and Display Name are required');
+    return;
+  }
+  
+  // Collect fields
+  const fields = [];
+  const fieldItems = document.querySelectorAll('.field-item');
+  
+  for (const item of fieldItems) {
+    const fieldName = item.querySelector('.field-name').value.trim();
+    const fieldType = item.querySelector('.field-type').value;
+    
+    if (!fieldName) {
+      showError('All fields must have a name');
+      return;
+    }
+    
+    const field = {
+      name: fieldName,
+      type: fieldType,
+      displayName: item.querySelector('.field-display-name').value.trim(),
+      required: item.querySelector('.field-required').checked,
+      description: item.querySelector('.field-description').value.trim()
+    };
+    
+    // Parse validations if provided
+    const validationsText = item.querySelector('.field-validations').value.trim();
+    if (validationsText) {
+      try {
+        field.validations = JSON.parse(validationsText);
+      } catch (e) {
+        showError('Invalid JSON in validations');
+        return;
+      }
+    }
+    
+    fields.push(field);
+  }
+  
+  if (fields.length === 0) {
+    showError('At least one field is required');
+    return;
+  }
+  
+  const payload = { name, displayName, description, fields };
+  
+  try {
+    const url = typeId ? `${API_BASE}/content-types/${typeId}` : `${API_BASE}/content-types`;
+    const method = typeId ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to save');
+    }
+    
+    showSuccess(`Content type ${typeId ? 'updated' : 'created'} successfully`);
+    bootstrap.Modal.getInstance(document.getElementById('contentTypeModal')).hide();
+    loadContentTypes();
+  } catch (error) {
+    console.error('Error saving content type:', error);
+    showError(error.message);
+  }
+}
+
+// Utility functions
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showSuccess(message) {
+  // Simple alert for now - could be replaced with toast notifications
+  alert('✅ ' + message);
+}
+
+function showError(message) {
+  alert('❌ ' + message);
+}
+</script>
+
+<style>
+.field-item {
+  transition: all 0.3s ease;
+}
+
+.field-item:hover {
+  box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+
+.validations-section {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>

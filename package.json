@@ -9,7 +9,11 @@
     "test": "mocha \"src/**/*.test.js\"",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:coverage": "playwright test --coverage"
+    "test:e2e:coverage": "playwright test --coverage",
+    "migrate": "npx knex migrate:latest --knexfile src/server/db/knexfile.js",
+    "migrate:rollback": "npx knex migrate:rollback --knexfile src/server/db/knexfile.js",
+    "migrate:status": "npx knex migrate:status --knexfile src/server/db/knexfile.js",
+    "example:ddd": "node examples/ddd-usage-example.js"
   },
   "author": "10xDevs",
   "license": "ISC",
@@ -27,11 +31,13 @@
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@types/node": "22.14.1",
+    "@vitest/ui": "^4.0.7",
     "bower": "1.8.14",
     "chai": "4.3.4",
     "mocha": "8.4.0",
     "nodemon": "^3.0.2",
-    "ts-migrate": "^0.1.35"
+    "ts-migrate": "^0.1.35",
+    "vitest": "^4.0.7"
   },
   "engines": {
     "node": ">=16.0.0"
