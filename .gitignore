@@ -43,6 +43,7 @@ e2e/test-results/
 e2e/.auth/
 test-results/
 playwright-report/
+coverage/
 
 # Development database
 src/server/db/dev.sqlite3
