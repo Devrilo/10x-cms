@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "22.14.1",
+    "@types/node": "^22.14.1",
     "@vitest/coverage-v8": "^4.0.7",
     "@vitest/ui": "^4.0.7",
     "bower": "1.8.14",
@@ -42,6 +42,7 @@
     "mocha": "8.4.0",
     "nodemon": "^3.0.2",
     "ts-migrate": "^0.1.35",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.7"
   },
   "engines": {
